@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirm Account Deletion</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        input[type="email"] {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #c82333;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Confirm Account Deletion</h1>
+        <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+        
+        <button onclick="confirmDeletion()">Yes, Delete My Account</button>
+        <button onclick="window.close()" style="background-color: #6c757d;">Cancel</button>
+        
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // Same Firebase config as index.html
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            // ... other config
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        async function confirmDeletion() {
+            const messageDiv = document.getElementById('message');
+
+            try {
+                // Get the action code from the URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const actionCode = urlParams.get('oobCode');
+
+                // Verify the password reset code
+                await firebase.auth().verifyPasswordResetCode(actionCode);
+                
+                // Sign in the user (required for deletion)
+                const email = urlParams.get('email');
+                
+                // Delete the user account
+                const user = firebase.auth().currentUser;
+                await user.delete();
+
+                showMessage('Your account has been successfully deleted.', 'success');
+                
+            } catch (error) {
+                showMessage(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = text;
+        }
+    </script>
+</body>
+</html> 
